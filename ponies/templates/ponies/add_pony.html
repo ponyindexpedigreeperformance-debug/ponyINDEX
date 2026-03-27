@@ -1,0 +1,320 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Add Pony | PonyINDEX{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-wrapper{
+    max-width:900px;
+    margin:auto;
+    margin-top:40px;
+}
+.form-card{
+    background-color:#f8f9fa;
+    border-radius:12px;
+    padding:30px;
+    margin-bottom:30px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+.form-grid-3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:20px;
+}
+label{font-weight:600;margin-bottom:5px;}
+.required-asterisk{color:red;margin-left:3px;}
+input, select{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    transition: all 0.2s ease;
+}
+input:focus, select:focus{
+    border-color:#0A8F8F;
+    box-shadow: 0 0 5px rgba(10,143,143,0.3);
+    outline:none;
+}
+.checkbox-group{
+    display:flex;
+    gap:25px;
+    align-items:center;
+}
+.checkbox-group input{width:auto;}
+.form-submit{text-align:center;margin-top:30px;}
+.section-title{font-weight:bold;margin-bottom:25px;text-align:left;font-size: 22px;}
+.main-title {font-size: 52px;text-align:center;font-weight:bold;}
+.subtitle{text-align:center;color:#555;font-size:16px;margin-bottom:30px;}
+
+/* Buttons - now black */
+.btn-signature{
+    background-color: #000;
+    color: white;
+    padding: 12px 35px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s ease;
+}
+.btn-signature:hover{
+    background-color: #333;
+}
+
+.main-image-wrapper{position: relative;display: flex;align-items: center;gap: 10px;}
+.main-image-wrapper img{max-width: 150px;border-radius: 10px;}
+.remove-image-btn{position: absolute;top: 0;right: 0;background: #ff4d4d;border: none;color: white;font-weight: bold;border-radius: 50%;width: 22px;height: 22px;cursor: pointer;text-align: center;line-height: 20px;}
+.image-form{position: relative;border: 1px solid #ddd;padding:10px;border-radius:8px;margin-bottom:10px;}
+.image-form .remove-image-btn{top:5px;right:5px;}
+
+/* Autocomplete dropdown */
+.autocomplete-suggestions{
+    border:1px solid #ccc;
+    max-height:150px;
+    overflow-y:auto;
+    position:absolute;
+    background:white;
+    z-index:1000;
+}
+.autocomplete-suggestion{
+    padding:5px;
+    cursor:pointer;
+}
+.autocomplete-suggestion.highlight{
+    background-color:#f0f0f0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container form-wrapper">
+
+<h1 class="main-title">Add Pony</h1>
+<p class="subtitle">Fill out the details below to register a new pony in the database</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- HORSE DETAILS -->
+    <div class="form-card">
+        <h3 class="section-title">Horse Details</h3>
+        <div class="form-grid">
+            <div>{{ form.name.label_tag }}<span class="required-asterisk">*</span>{{ form.name }}</div>
+            <div>{{ form.gender.label_tag }}<span class="required-asterisk">*</span>{{ form.gender }}</div>
+            <div>{{ form.year_of_birth.label_tag }}{{ form.year_of_birth }}</div>
+            <div>{{ form.height_cm.label_tag }}{{ form.height_cm }}</div>
+            <div>{{ form.color.label_tag }}{{ form.color }}</div>
+            <div>{{ form.studbook.label_tag }}{{ form.studbook }}</div>
+        </div>
+    </div>
+
+    <!-- IDENTIFICATION -->
+    <div class="form-card">
+        <h3 class="section-title">Identification</h3>
+        <div class="form-grid-3">
+            <div>{{ form.fei_id.label_tag }}{{ form.fei_id }}</div>
+            <div>{{ form.ueln.label_tag }}{{ form.ueln }}</div>
+            <div>{{ form.microchip.label_tag }}{{ form.microchip }}</div>
+        </div>
+    </div>
+
+    <!-- BREEDER & OWNER -->
+    <div class="form-card">
+        <h3 class="section-title">Breeder & Owner</h3>
+        <div class="form-grid">
+            <div>{{ form.breeder.label_tag }}{{ form.breeder }}</div>
+            <div>{{ form.owner.label_tag }}{{ form.owner }}</div>
+        </div>
+    </div>
+
+   <!-- PEDIGREE -->
+<div class="form-card">
+    <h3 class="section-title">Pedigree</h3>
+    <div class="form-grid">
+        <div>
+            {{ form.sire_name.label_tag }}
+            <input type="text" id="id_sire_name" name="sire_name" autocomplete="off">
+            <div id="sire_suggestions" class="autocomplete-suggestions"></div>
+        </div>
+        <div>
+            {{ form.dam_name.label_tag }}
+            <input type="text" id="id_dam_name" name="dam_name" autocomplete="off">
+            <div id="dam_suggestions" class="autocomplete-suggestions"></div>
+        </div>
+    </div>
+
+    <!-- PEDIGREE IMAGE UPLOAD -->
+    <div class="form-grid" style="margin-top:20px;">
+        <div style="grid-column:1/-1;">
+            <label for="id_pedigree_image">Passport pedigree Section Image</label>
+            <input type="file" id="id_pedigree_image" name="pedigree_image" accept="image/*" style="margin-top:5px;">
+            {% if pony.pedigree_image %}
+                <div style="margin-top:10px;">
+                    <img src="{{ pony.pedigree_image.url }}" alt="Pedigree Image" style="max-width:300px; border-radius:8px;">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+    <!-- BREEDING -->
+    <div class="form-card">
+        <h3 class="section-title">Breeding</h3>
+        <div class="checkbox-group">
+            <label>{{ form.is_approved_stallion }} Approved Stallion</label>
+            <label>{{ form.is_at_stud }} At Stud</label>
+        </div>
+        <div class="form-grid">
+            <div>{{ form.approved_for.label_tag }}{{ form.approved_for }}</div>
+            <div>{{ form.wffs_status.label_tag }}{{ form.wffs_status }}</div>
+            <div>{{ form.stud_fee.label_tag }}{{ form.stud_fee }}</div>
+        </div>
+    </div>
+
+    <!-- BREEDING CONTACT -->
+    <div class="form-card">
+        <h3 class="section-title">Breeding Contact</h3>
+        <div class="form-grid">
+            <div>{{ form.stallion_holder.label_tag }}{{ form.stallion_holder }}</div>
+            <div>{{ form.email.label_tag }}{{ form.email }}</div>
+            <div>{{ form.phone.label_tag }}{{ form.phone }}</div>
+            <div>{{ form.website.label_tag }}{{ form.website }}</div>
+        </div>
+    </div>
+
+    <!-- MAIN IMAGE -->
+    <div class="form-card">
+        <h3 class="section-title">Main Image</h3>
+        <div class="main-image-wrapper">
+            {{ form.image }}
+            {% if form.instance.image %}
+                <img src="{{ form.instance.image.url }}" alt="Current Main Image">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- OTHER IMAGES -->
+    <div class="form-card">
+        <h3 class="section-title">Other Images</h3>
+        {{ formset.management_form }}
+        <div id="image-formset">
+            {% for f in formset %}
+            <div class="image-form form-grid">
+                <div>{{ f.image.label_tag }}{{ f.image }}</div>
+                <div>{{ f.caption.label_tag }}{{ f.caption }}</div>
+                <button type="button" class="remove-image-btn" onclick="this.parentElement.remove(); updateTotalForms();">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" id="add-image-btn" class="btn-signature">Add another image</button>
+    </div>
+
+    <div class="form-submit">
+        <button type="submit" class="btn-signature">Add Pony</button>
+    </div>
+</form>
+</div>
+
+<!-- IMAGE FORMSET JS -->
+<script>
+const addButton = document.getElementById("add-image-btn");
+const totalForms = document.getElementById("id_images-TOTAL_FORMS");
+const formContainer = document.getElementById("image-formset");
+
+function updateTotalForms(){
+    totalForms.value = formContainer.querySelectorAll(".image-form").length;
+}
+
+addButton.addEventListener("click", function(){
+    const formCount = parseInt(totalForms.value);
+    const firstForm = document.querySelector(".image-form");
+    const newForm = firstForm.cloneNode(true);
+
+    const inputs = newForm.querySelectorAll("input");
+    inputs.forEach(input => {
+        if(input.name){
+            input.name = input.name.replace(/-\d+-/, "-" + formCount + "-");
+            input.id = input.id.replace(/-\d+-/, "-" + formCount + "-");
+            input.value = "";
+            if(input.type === "checkbox") input.checked = false;
+        }
+    });
+
+    formContainer.appendChild(newForm);
+    updateTotalForms();
+});
+</script>
+
+<!-- AUTOCOMPLETE JS -->
+<script>
+function setupAutocomplete(inputId, suggestionDivId){
+    const input = document.getElementById(inputId);
+    const suggestions = document.getElementById(suggestionDivId);
+    let selectedIndex = -1;
+    let currentResults = [];
+
+    input.addEventListener('input', async function(){
+        const query = input.value.trim();
+        if(!query){ suggestions.innerHTML=''; return; }
+
+        const res = await fetch("{% url 'ponies:pony_autocomplete' %}?q=" + encodeURIComponent(query));
+        const data = await res.json();
+        currentResults = data.results;
+        selectedIndex = -1;
+        suggestions.innerHTML = '';
+
+        currentResults.forEach((item, idx)=>{
+            const div = document.createElement('div');
+            div.className = 'autocomplete-suggestion';
+            div.textContent = item.text;
+            div.addEventListener('click', ()=>{
+                input.value = item.text;
+                suggestions.innerHTML='';
+            });
+            suggestions.appendChild(div);
+        });
+    });
+
+    input.addEventListener('keydown', function(e){
+        const children = suggestions.querySelectorAll('.autocomplete-suggestion');
+        if(e.key === "ArrowDown"){ 
+            selectedIndex = (selectedIndex + 1) % children.length;
+            updateHighlight(children); e.preventDefault();
+        }
+        else if(e.key === "ArrowUp"){ 
+            selectedIndex = (selectedIndex - 1 + children.length) % children.length;
+            updateHighlight(children); e.preventDefault();
+        }
+        else if(e.key === "Enter"){
+            if(selectedIndex >=0 && children[selectedIndex]){
+                input.value = children[selectedIndex].textContent;
+                suggestions.innerHTML='';
+                e.preventDefault();
+            }
+        }
+    });
+
+    function updateHighlight(children){
+        children.forEach((c,i)=>c.classList.toggle('highlight', i===selectedIndex));
+    }
+
+    document.addEventListener('click', function(e){
+        if(!suggestions.contains(e.target) && e.target!==input){
+            suggestions.innerHTML='';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    setupAutocomplete('id_sire_name', 'sire_suggestions');
+    setupAutocomplete('id_dam_name', 'dam_suggestions');
+});
+</script>
+
+{% endblock %}

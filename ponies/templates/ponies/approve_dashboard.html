@@ -1,0 +1,65 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Approval Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2 class="mb-4">Pending Ponies</h2>
+
+    {% if pending_ponies %}
+
+        <div class="mb-3">
+            <a href="{% url 'ponies:approve_all_ponies' %}" class="btn btn-success">
+                Approve All
+            </a>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Year</th>
+                    <th>Height</th>
+                    <th>Color</th>
+                    <th>Studbook</th>
+                    <th>Breeder</th>
+                    <th>Owner</th>
+                    <th>Sire</th>
+                    <th>Dam</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pony in pending_ponies %}
+                <tr>
+                    <td>{{ pony.name }}</td>
+                    <td>{{ pony.gender }}</td>
+                    <td>{{ pony.year_of_birth|default:"-" }}</td>
+                    <td>{{ pony.height_cm|default:"-" }}</td>
+                    <td>{{ pony.color|default:"-" }}</td>
+                    <td>{{ pony.studbook|default:"-" }}</td>
+                    <td>{{ pony.breeder|default:"-" }}</td>
+                    <td>{{ pony.owner|default:"-" }}</td>
+                    <td>{% if pony.sire %}{{ pony.sire.name }}{% else %}-{% endif %}</td>
+                    <td>{% if pony.dam %}{{ pony.dam.name }}{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'ponies:approve_pony' pony.id %}" class="btn btn-success btn-sm">
+                            Approve
+                        </a>
+                        <a href="{% url 'ponies:reject_pony' pony.id %}" class="btn btn-danger btn-sm">
+                            Reject
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <p>No ponies pending approval.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

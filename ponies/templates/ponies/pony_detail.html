@@ -1,0 +1,400 @@
+{% extends "ponies/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.detail-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    font-family: "Avenir Next Condensed", Arial, sans-serif;
+}
+
+/* Name */
+.name-box {
+    text-align:center;
+    border-top:2px solid #AEEEEE;
+    border-bottom:2px solid #AEEEEE;
+    padding:22px 0;
+    margin-bottom:50px;
+    position:relative;
+}
+.name-box h1 { 
+    font-size:42px; 
+    font-weight:700; 
+    cursor:pointer;
+}
+
+/* Image + Details */
+.image-details-wrapper {
+    display:flex;
+    flex-wrap:wrap;
+    gap:60px;
+    background:#f7f7f7;
+    padding:30px;
+    border-radius:14px;
+    margin-bottom:50px;
+}
+
+.image-slider {
+    width:450px;
+    position:relative;
+    overflow:hidden;
+    border-radius:12px;
+}
+.image-slider img {
+    width: 100%;
+    max-height: 500px;   /* give it more space */
+    object-fit: contain; /* NO cropping */
+    object-position: center;
+    border-radius: 12px;
+    background-color: #f5f5f5;
+    display: none;
+}
+.image-slider img.active { display:block; }
+
+.slider-btn {
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(255,255,255,0.8);
+    border:none;
+    font-size:24px;
+    cursor:pointer;
+    padding:6px 12px;
+    border-radius:6px;
+    z-index:10;
+}
+.prev { left:0; }
+.next { right:0; }
+
+.details-columns {
+    display:flex;
+    flex-wrap:wrap;
+    gap:60px;
+    flex:1;
+}
+.details-column h3 {
+    border-bottom:3px solid #AEEEEE;
+    padding-bottom:5px;
+    margin-bottom:15px;
+    font-weight:700;
+    font-size:28px;
+}
+.details-column p { margin:8px 0; }
+
+/* Sections */
+.section h2 {
+    margin-top:60px;
+    border-bottom:3px solid #AEEEEE;
+    padding-bottom:5px;
+    font-weight:700;
+    font-size:28px;
+}
+
+/* Tables */
+.results-table {
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,0.06);
+    margin-top:20px;
+}
+.results-table th {
+    background:#f7f7f7;
+    padding:12px;
+    text-align:left;
+}
+.results-table td {
+    padding:12px;
+    border-top:1px solid #eee;
+}
+.results-table tr:nth-child(even){ background:#dffcf7; }
+.results-table tr:hover { background:#b8f5ed; }
+.results-table a {
+    text-decoration:none;
+    font-weight:600;
+    color:black;
+}
+
+/* Pagination Links */
+.pagination {
+    text-align:center;
+    margin-top:15px;
+}
+.pagination a {
+    color:black;
+    font-weight:600;
+    margin: 0 8px;
+    text-decoration:none;
+}
+.pagination a:hover {
+    text-decoration:underline;
+}
+
+/* ===================== */
+/* PEDIGREE (4 gens) */
+/* ===================== */
+.pedigree-tree {
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:60px;
+    margin-top:50px;
+    justify-items:center;
+}
+
+.pedigree-column {
+    display:grid;
+    justify-items:center;
+    align-content:center;
+}
+
+.pedigree-column[data-gen="0"] { grid-template-rows: 1fr; }
+.pedigree-column[data-gen="1"] { grid-template-rows: repeat(2, 1fr); }
+.pedigree-column[data-gen="2"] { grid-template-rows: repeat(4, 1fr); }
+.pedigree-column[data-gen="3"] { grid-template-rows: repeat(8, 1fr); }
+
+.pedigree-box {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:4px 0;
+    position:relative;
+}
+
+.pedigree-box a {
+    display:block;
+    font-size:20px;
+    font-weight:600;
+    text-align:center;
+    text-decoration:none;
+    color:black;
+    cursor:pointer;
+}
+
+/* Hover info (two lines) for pedigree */
+.pedigree-info {
+    font-size:14px;
+    color:#555;
+    line-height:1.4;
+    text-align:center;
+    opacity:0;
+    max-height:0;
+    overflow:hidden;
+    transition: all 0.25s ease;
+}
+.pedigree-box a:hover + .pedigree-info {
+    opacity:1;
+    max-height:50px;
+}
+
+/* Disable hover info for last gen */
+.pedigree-column[data-gen="3"] .pedigree-info {
+    display: none !important;
+}
+
+/* Specific colors */
+.pedigree-box.main-pony a { font-size:20px; font-weight:700; color:#000 !important; }
+.pedigree-box.sire a { font-size:20px; color:#58c9ba !important; }
+.pedigree-box.dam a { font-size:20px; color:#000000 !important; }
+
+/* Empty slots */
+.pedigree-box.empty {
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#aaa;
+    font-size:13px;
+}
+
+/* Responsive */
+@media(max-width:1200px){
+    .image-details-wrapper,
+    .details-columns { flex-direction:column; gap:30px; }
+    .image-slider { width:100%; max-width:450px; }
+    .pedigree-tree { grid-template-columns: repeat(1, 1fr); }
+}
+</style>
+
+<div class="detail-container">
+
+    <!-- NAME -->
+    <div class="name-box">
+        <h1>{{ pony.name }}</h1>
+        <div class="name-meta">
+            Breeder: {{ pony.breeder }} | Owner: {{ pony.owner }}
+        </div>
+    </div>
+
+    <!-- IMAGE + DETAILS -->
+    <div class="image-details-wrapper">
+        <div class="image-slider" id="imageSlider">
+            {% for url in pony.all_images_for_slider %}
+                <img src="{{ url }}" class="{% if forloop.first %}active{% endif %}">
+            {% empty %}
+                <img src="https://via.placeholder.com/450x300?text=No+Image" class="active">
+            {% endfor %}
+            <button class="slider-btn prev">❮</button>
+            <button class="slider-btn next">❯</button>
+        </div>
+
+        <div class="details-columns">
+            <div class="details-column">
+                <h3>Horse Details</h3>
+                <p><b>Gender:</b> {{ pony.gender }}</p>
+                <p><b>Year of Birth:</b> {{ pony.year_of_birth }}</p>
+                <p><b>Height:</b> {{ pony.height_cm }} cm</p>
+                <p><b>Colour:</b> {{ pony.color }}</p>
+                <p><b>Studbook:</b> {{ pony.studbook }}</p>
+                <p><b>FEI ID:</b> {{ pony.fei_id }}</p>
+                <p><b>UELN:</b> {{ pony.ueln }}</p>
+                <p><b>MICROCHIP:</b> {{ pony.microchip }}</p>
+            </div>
+
+            {% if pony.is_at_stud %}
+            <div class="details-column">
+                <h3>Breeding Details</h3>
+                <p><b>Approved for:</b> {{ pony.approved_for }}</p>
+                <p><b>WFFS Status:</b> {{ pony.wffs_status }}</p>
+                <p><b>Stud Fee:</b> {{ pony.stud_fee }}</p>
+                <p><b>Email:</b> {{ pony.email }}</p>
+                <p><b>Phone:</b> {{ pony.phone }}</p>
+                <p><b>Website:</b> {{ pony.website }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- COMPETITION -->
+    <div class="section">
+        <h2>Competition Record</h2>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Date</th><th>Show</th><th>Event</th><th>Competition</th>
+                    <th>Obs. Height</th><th>Athlete</th><th>Position</th><th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in comp_page_obj %}
+                <tr>
+                    <td>{{ record.date|date:"d/m/Y" }}</td>
+                    <td>{{ record.show|default:"-" }}</td>
+                    <td>{{ record.event|default:"-" }}</td>
+                    <td>{{ record.competition|default:"-" }}</td>
+                    <td>{{ record.obs_height|default:"-" }}</td>
+                    <td>{{ record.athlete|default:"-" }}</td>
+                    <td>{{ record.position|default:"-" }}</td>
+                    <td>{{ record.score|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" style="text-align:center;padding:20px;">No competition records</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Competition Pagination -->
+        <div class="pagination">
+            {% if comp_page_obj.has_previous %}
+                <a href="?comp_page={{ comp_page_obj.previous_page_number }}&off_page={{ off_page_obj.number }}">« Prev</a>
+            {% endif %}
+
+            Page {{ comp_page_obj.number }} of {{ comp_page_obj.paginator.num_pages }}
+
+            {% if comp_page_obj.has_next %}
+                <a href="?comp_page={{ comp_page_obj.next_page_number }}&off_page={{ off_page_obj.number }}">Next »</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- OFFSPRING -->
+    <div class="section">
+        <h2>Offspring</h2>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Name</th><th>Gender</th><th>Year</th><th>Height</th>
+                    <th>Studbook</th><th>UELN</th><th>FEI ID</th>
+                    <th>Sire</th><th>Dam</th><th>Dam Sire</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for child in off_page_obj %}
+                <tr>
+                    <td><a href="{% url 'ponies:pony_detail' child.pk %}">{{ child.name }}</a></td>
+                    <td>{{ child.gender|default:"-" }}</td>
+                    <td>{{ child.year_of_birth|default:"-" }}</td>
+                    <td>{{ child.height_cm|default:"-" }}</td>
+                    <td>{{ child.studbook|default:"-" }}</td>
+                    <td>{{ child.ueln|default:"-" }}</td>
+                    <td>{{ child.fei_id|default:"-" }}</td>
+                    <td>{% if child.sire %}<a href="{% url 'ponies:pony_detail' child.sire.id %}">{{ child.sire.name }}</a>{% else %}-{% endif %}</td>
+                    <td>{% if child.dam %}<a href="{% url 'ponies:pony_detail' child.dam.id %}">{{ child.dam.name }}</a>{% else %}-{% endif %}</td>
+                    <td>{% if child.dam and child.dam.sire %}<a href="{% url 'ponies:pony_detail' child.dam.sire.id %}">{{ child.dam.sire.name }}</a>{% else %}-{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" style="text-align:center;padding:25px;">No offspring recorded</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Offspring Pagination -->
+        <div class="pagination">
+            {% if off_page_obj.has_previous %}
+                <a href="?off_page={{ off_page_obj.previous_page_number }}&comp_page={{ comp_page_obj.number }}">« Prev</a>
+            {% endif %}
+
+            Page {{ off_page_obj.number }} of {{ off_page_obj.paginator.num_pages }}
+
+            {% if off_page_obj.has_next %}
+                <a href="?off_page={{ off_page_obj.next_page_number }}&comp_page={{ comp_page_obj.number }}">Next »</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PEDIGREE -->
+    <div class="section">
+        <h2>Pedigree</h2>
+        <div class="pedigree-tree">
+            {% for generation in generations %}
+            <div class="pedigree-column" data-gen="{{ forloop.counter0 }}">
+                {% for member in generation %}
+                    {% if member %}
+                        <div class="pedigree-box {% if forloop.parentloop.counter0 == 0 %}main-pony{% elif member.gender == "Stallion" or member.gender == "Gelding" %}sire{% elif member.gender == "Mare" %}dam{% endif %}">
+                            <a href="{% url 'ponies:pony_detail' member.id %}">{{ member.name }}</a>
+                            <div class="pedigree-info">
+                                <div>{{ member.gender }} • {{ member.year_of_birth|default:"-" }} • {{ member.height_cm|default:"-" }} cm • {{ member.studbook|default:"-" }}</div>
+                                <div>{{ member.ueln|default:"-" }} • {{ member.fei_id|default:"-" }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="pedigree-box empty">-</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+let slides = document.querySelectorAll('.image-slider img');
+let current = 0;
+
+function showSlide(i){
+    slides.forEach(img=>img.classList.remove('active'));
+    slides[i].classList.add('active');
+    current=i;
+}
+
+document.querySelector('.prev').onclick = ()=>showSlide((current-1+slides.length)%slides.length);
+document.querySelector('.next').onclick = ()=>showSlide((current+1)%slides.length);
+
+if(slides.length>0) showSlide(0);
+</script>
+
+{% endblock %}

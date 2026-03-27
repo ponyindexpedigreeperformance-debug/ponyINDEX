@@ -1,0 +1,169 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}PonyINDEX | Sport Pony Database{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    text-align: center;
+    padding: 80px 20px 20px 20px;
+}
+.hero-section h1 { font-size: 48px; font-weight: bold; }
+.hero-section p { font-size: 20px; color: #444; }
+.search-bar { max-width: 600px; margin: 25px auto 30px auto; }
+
+.section-title { text-align: center; font-weight: bold; margin-bottom: 30px; margin-top: 40px; }
+
+.feature-card {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 25px;
+    transition: 0.3s ease;
+    height: 100%;
+}
+.feature-card:hover { transform: translateY(-5px); }
+.feature-card img {
+    width: 100%;
+    height: 300px; /* a bit taller = less brutal crop */
+    object-fit: cover;
+    object-position: center top; /* THIS is the key fix */
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+.feature-card h4 { font-weight: bold; }
+
+.about-box {
+    padding: 25px;
+    background-color: #DBF0EE;
+    border-radius: 12px;
+    text-align: center;
+    height: 100%;
+}
+
+.side-panel {
+    position: fixed;
+    top: 180px;
+    width: 240px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+}
+.left-panel { left: 20px; }
+.right-panel { right: 20px; }
+.side-panel h5 { font-weight: bold; margin-bottom: 15px; }
+
+@media (max-width: 1200px) {
+    .side-panel { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero-section">
+    <h1>Welcome to PonyINDEX</h1>
+    <p>Pony Pedigree and Performance Index</p>
+    <div class="search-bar">
+        <form method="GET" action="{% url 'ponies:pony_search' %}">
+            <input type="text" name="name" class="form-control form-control-lg" placeholder="Search ponies by name...">
+        </form>
+    </div>
+</section>
+
+<!-- SIDE PANELS -->
+<div class="side-panel left-panel">
+    <h5>Latest News</h5>
+    <p><strong>New:</strong> The new pony pedigree and performance index launched!!</p>
+</div>
+
+<div class="side-panel right-panel">
+    <h5>Upcoming Competitions</h5>
+    <p>29 Jul – 2 Aug 2026 — FEI European Pony Championships — Le Mans, France</p>
+    <p>1 – 5 Apr 2026 — Opglabbeek, Belgium</p>
+    <p>TBD Apr 2026 — CCI-P Pony Event, Opglabbeek, Belgium</p>
+    <p>TBD May 2026 — Regional FEI Pony Dressage, Compiègne, France</p>
+</div>
+
+<div class="container">
+
+    <!-- ABOUT -->
+    <h2 class="section-title">About PonyINDEX</h2>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="about-box">
+                <h5>Verified Pedigrees</h5>
+                <p>Structured bloodlines displayed clearly and professionally.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="about-box">
+                <h5>Competition Records</h5>
+                <p>International results presented in one simple overview.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="about-box">
+                <h5>Breeding Information</h5>
+                <p>Stud approvals, ownership and breeding details in one place.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURED -->
+    <h2 class="section-title">Featured This Month</h2>
+    <div class="row mb-5">
+
+        {% for pony in ponies %}
+        <div class="col-md-6 col-lg-6 mb-4">
+            <div class="feature-card">
+
+                {% if pony.image %}
+                    <img src="{{ pony.image.url }}" alt="{{ pony.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/600x400?text=No+Image" alt="No Image">
+                {% endif %}
+
+                <h4 class="mt-3 mb-1">
+                    <a href="{% url 'ponies:pony_detail' pony.pk %}" class="text-decoration-none text-dark">
+                        {{ pony.name }}
+                    </a>
+                </h4>
+
+                <p style="font-size: 15px; color: #888; margin-bottom: 6px;">
+                    (
+                    {% if pony.sire %}
+                        <a href="{% url 'ponies:pony_detail' pony.sire.id %}" style="color:#888; text-decoration:none;">
+                            {{ pony.sire.name }}
+                        </a>
+                    {% else %}-{% endif %}
+                    x
+                    {% if pony.dam and pony.dam.sire %}
+                        <a href="{% url 'ponies:pony_detail' pony.dam.sire.id %}" style="color:#888; text-decoration:none;">
+                            {{ pony.dam.sire.name }}
+                        </a>
+                    {% else %}-{% endif %}
+                    )
+                </p>
+
+                <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">
+                    {{ pony.gender|default:"-" }} • 
+                    {{ pony.year_of_birth|default:"-" }} • 
+                    {{ pony.studbook|default:"-" }} • 
+                    {{ pony.height_cm|default:"-" }} cm • 
+                    {{ pony.color|default:"-" }}
+                </p>
+
+                <a href="{% url 'ponies:pony_detail' pony.pk %}" class="btn btn-dark">
+                    View Pony Profile
+                </a>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-center">No featured ponies found.</p>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

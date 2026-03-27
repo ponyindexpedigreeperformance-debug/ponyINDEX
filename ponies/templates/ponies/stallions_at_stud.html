@@ -1,0 +1,264 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Stallions At Stud | PonyINDEX{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== HERO SECTION ===== */
+.hero-section {
+    text-align: center;
+    margin: 50px 0 40px;
+}
+.hero-section h1 {
+    font-size: 48px;
+    font-weight: 700;
+}
+.hero-section p {
+    font-size: 16px;
+    color: #555;
+    margin-top: 10px;
+}
+
+/* ===== FILTERS ===== */
+.filter-form {
+    background: #fff;
+    padding: 25px 20px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+.filter-form .row > div {
+    margin-bottom: 12px;
+}
+.filter-form input,
+.filter-form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+.filter-form input:focus,
+.filter-form select:focus {
+    outline: none;
+    border-color: #00b3a4;
+    box-shadow: 0 0 0 3px rgba(0,179,164,0.15);
+}
+.filter-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+.filter-buttons button,
+.filter-buttons a {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+.filter-buttons button {
+    background: #333;
+    color: white;
+    border: none;
+}
+.filter-buttons button:hover {
+    background: #555;
+}
+.filter-buttons a {
+    background: #ececec;
+    color: black;
+    text-decoration: none;
+    border: none;
+}
+.filter-buttons a:hover {
+    background: #dddddd;
+}
+
+/* ===== HORSE CARDS GRID ===== */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+.card-grid .card {
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+}
+.card-grid .card:hover {
+    transform: translateY(-7px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+.card-grid .card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.card-grid .card-body {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.card-grid .card-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+.card-grid .card-subtitle {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+}
+.card-grid .card-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+.card-grid .card-text b {
+    font-weight: 700;
+}
+.card-grid .btn-sm {
+    font-size: 13px;
+    padding: 5px 10px;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+.pagination a:hover {
+    background: #00b3a4;
+    color: white;
+    border-color: #00b3a4;
+}
+.pagination .active {
+    background: #00b3a4;
+    color: white;
+    border-color: #00b3a4;
+}
+.pagination .disabled {
+    color: #aaa;
+    border-color: #ddd;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <h1>Stallions At Stud</h1>
+        <p>Find approved stallions ready for breeding. Filter by characteristics and explore their pedigrees.</p>
+    </div>
+
+    <!-- FILTERS -->
+    <form method="get" class="filter-form">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <input type="text" name="name" placeholder="Name" value="{{ filters.name }}">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="color" placeholder="Color" value="{{ filters.color }}">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="year" placeholder="Year of Birth" value="{{ filters.year }}">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="height" placeholder="Height (cm)" value="{{ filters.height }}">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="studbook" placeholder="Studbook" value="{{ filters.studbook }}">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="approved_for" placeholder="Approved For" value="{{ filters.approved_for }}">
+            </div>
+        </div>
+        <div class="filter-buttons">
+            <a href="{% url 'ponies:stallions_at_stud' %}">Clear Filters</a>
+            <button type="submit">Filter</button>
+        </div>
+    </form>
+
+    <!-- HORSE CARDS GRID -->
+    <div class="card-grid">
+        {% for pony in page_obj %}
+        <div class="card">
+            {% if pony.image %}
+                <img src="{{ pony.image.url }}" alt="{{ pony.name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/300x180?text=No+Image" alt="{{ pony.name }}">
+            {% endif %}
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title">{{ pony.name }}</h5>
+                    <div class="card-subtitle">
+                        {% if pony.sire and pony.dam and pony.dam.sire %}
+                            {{ pony.sire.name }} × {{ pony.dam.sire.name }}
+                        {% elif pony.sire %}
+                            {{ pony.sire.name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <p class="card-text">{{ pony.gender }} • {{ pony.year_of_birth|default:"-" }} • {{ pony.height_cm|default:"-" }} cm • {{ pony.studbook|default:"-" }}</p>
+                    <p class="card-text"><b>Approved For:</b> {{ pony.approved_for|default:"-" }}</p>
+                    <p class="card-text"><b>Stud Fee:</b> {{ pony.stud_fee|default:"-" }}</p>
+                </div>
+                <a href="{% url 'ponies:pony_detail' pony.pk %}" class="btn btn-dark btn-sm">View Profile</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No stallions found.</p>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?{% if filters %}{{ filters.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">«</a>
+        {% else %}
+            <span class="disabled">«</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="active">{{ num }}</span>
+            {% else %}
+                <a href="?{% if filters %}{{ filters.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?{% if filters %}{{ filters.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">»</a>
+        {% else %}
+            <span class="disabled">»</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

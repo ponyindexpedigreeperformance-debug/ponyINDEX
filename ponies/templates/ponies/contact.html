@@ -1,0 +1,168 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Contact Us | PonyINDEX{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== HERO SECTION ===== */
+.hero-section {
+    text-align: center;
+    margin: 50px 0 40px;
+}
+.hero-section h1 {
+    font-size: 42px;
+    font-weight: 700;
+}
+.hero-section p {
+    font-size: 16px;
+    color: #555;
+    margin-top: 10px;
+}
+
+/* ===== CONTACT FORM ===== */
+.contact-container {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #f7f7f7;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+}
+.contact-form button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #000;      /* changed to black */
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+.contact-form button:hover {
+    background: #333;      /* darker on hover */
+}
+
+/* ALERTS */
+.alert {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* ===== FOOTER SOCIAL LINKS ===== */
+.footer-social {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid #ddd;
+}
+.footer-social h4 {
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+.footer-social ul {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+.footer-social ul li a {
+    text-decoration: none;
+    color: #00b3a4;
+    font-weight: 600;
+    transition: 0.25s ease;
+}
+.footer-social ul li a:hover {
+    color: #00766c;
+    text-decoration: underline;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 767px) {
+    .contact-container {
+        gap: 30px;
+        padding: 0 15px;
+    }
+    .footer-social ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container contact-container">
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <h1>Contact Us</h1>
+        <p>For questions, recommendations, or corrections, please reach out.</p>
+    </div>
+
+    <!-- CONTACT FORM -->
+    <div class="contact-form-wrapper">
+
+        {% if success %}
+            <div class="alert alert-success">
+                Your message has been sent successfully!
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="contact-form">
+            {% csrf_token %}
+            {{ form.honeypot }} {# Hidden honeypot field #}
+
+            <input type="text" name="name" placeholder="Name" 
+                value="{{ form.name.value|default_if_none:'' }}" required>
+            <input type="email" name="email" placeholder="Email" 
+                value="{{ form.email.value|default_if_none:'' }}" required>
+            <textarea name="note" placeholder="Your Message" rows="6" required>{{ form.note.value|default_if_none:'' }}</textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- FOOTER SOCIAL LINKS -->
+<div class="footer-social">
+    <h4>Follow us on Social Media</h4>
+    <ul>
+        <li><a href="https://www.facebook.com/profile.php?id=61588148276300" target="_blank">Facebook</a></li>
+        <li><a href="https://instagram.com/pony.index" target="_blank">Instagram</a></li>
+    </ul>
+</div>
+{% endblock %}

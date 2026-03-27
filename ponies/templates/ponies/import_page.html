@@ -1,0 +1,54 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Import Ponies | PonyINDEX{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5" style="max-width: 600px;">
+
+    <h2 class="text-center mb-4">{{ title }}</h2>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if 'error' in message.tags %}alert-danger{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- UPLOAD CARD -->
+    <div class="card p-4 shadow-sm">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Upload File</label>
+                <input type="file" name="file" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100">
+                Upload & Import
+            </button>
+        </form>
+
+    </div>
+
+    <!-- HELP TEXT -->
+    <div class="mt-4 text-muted" style="font-size: 14px;">
+        <p><strong>Supported formats:</strong> .xlsx, .csv</p>
+        <p><strong>Required columns:</strong> name, ueln</p>
+        <p><strong>Optional:</strong> sire, dam, gender, year_of_birth, color, studbook</p>
+    </div>
+
+    <!-- BACK BUTTON -->
+    <div class="text-center mt-4">
+        <a href="{% url 'ponies:index' %}" class="btn btn-outline-secondary">
+            Back to Home
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Log Out | PonyINDEX{% endblock %}
+
+{% block extra_css %}
+<style>
+
+.auth-wrapper{
+    max-width:420px;
+    margin:auto;
+    margin-top:60px;
+}
+
+.auth-card{
+    background:#f8f9fa;
+    border-radius:12px;
+    padding:35px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    text-align:center;
+}
+
+.auth-title{
+    font-size:36px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.auth-subtitle{
+    color:#555;
+    margin-bottom:25px;
+}
+
+.btn-auth{
+    width:100%;
+    background:#0A8F8F;
+    color:white;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.btn-auth:hover{
+    background:#097979;
+}
+
+.auth-links{
+    margin-top:15px;
+}
+
+.auth-links a{
+    color:#0A8F8F;
+    text-decoration:none;
+}
+
+.auth-links a:hover{
+    text-decoration:underline;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+
+    <div class="auth-card">
+
+        <h1 class="auth-title">Log Out</h1>
+        <p class="auth-subtitle">Are you sure you want to log out?</p>
+
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-auth">Confirm Logout</button>
+        </form>
+
+        <div class="auth-links">
+            <p>
+                Changed your mind?
+                <a href="{% url 'ponies:index' %}">Go back</a>
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

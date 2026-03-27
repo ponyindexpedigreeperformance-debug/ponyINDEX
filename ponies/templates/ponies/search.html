@@ -1,0 +1,285 @@
+{% extends "ponies/base.html" %}
+
+{% block title %}Search | PonyINDEX{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* ===== HERO ===== */
+.search-hero {
+    text-align: center;
+    margin: 60px 0 40px;
+}
+
+.search-hero h1 {
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.search-hero p {
+    color: #666;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+/* ===== FILTER BOX ===== */
+.search-box {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    margin-bottom: 40px;
+}
+
+.search-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.search-grid input,
+.search-grid select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.search-grid input:focus,
+.search-grid select:focus {
+    outline: none;
+    border-color: #00c8b3;
+    box-shadow: 0 0 0 3px rgba(0,200,179,0.25);
+}
+
+/* ===== BUTTONS ===== */
+.search-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.search-actions button {
+    background: #000;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.search-actions button:hover {
+    background: #333;
+}
+
+.search-actions a {
+    background: #ececec;
+    padding: 8px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: black;
+    font-weight: 600;
+}
+
+.search-actions a:hover {
+    background: #ddd;
+}
+
+/* ===== RESULTS TABLE ===== */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+.results-table th {
+    background: #f7f7f7;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.results-table td {
+    padding: 14px;
+    font-size: 14px;
+    border-top: 1px solid #eee;
+}
+
+.results-table tr:nth-child(even) {
+    background: #dffcf7;
+}
+
+.results-table tr:hover {
+    background: #b8f5ed;
+}
+
+.results-table a {
+    text-decoration: none;
+    font-weight: 600;
+    color: black;
+}
+
+.results-table a:hover {
+    color: #00a895;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+    margin-top: 30px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.pagination a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.pagination a:hover {
+    color: #00a895;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <!-- HERO -->
+    <div class="search-hero">
+        <h1>Search Ponies</h1>
+        <p>Search pedigrees, breeding information and performance records.</p>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="search-box">
+        <form method="get">
+
+            <div class="search-grid">
+
+                <input type="text" name="name" placeholder="Name" value="{{ filters.name }}">
+                
+                <select name="gender">
+                    <option value="">Gender</option>
+                    <option value="Mare" {% if filters.gender == "Mare" %}selected{% endif %}>Mare</option>
+                    <option value="Stallion" {% if filters.gender == "Stallion" %}selected{% endif %}>Stallion</option>
+                    <option value="Gelding" {% if filters.gender == "Gelding" %}selected{% endif %}>Gelding</option>
+                </select>
+
+                <input type="text" name="year" placeholder="Year of Birth" value="{{ filters.year }}">
+                <input type="text" name="color" placeholder="Color" value="{{ filters.color }}">
+
+                <input type="text" name="height" placeholder="Height (cm)" value="{{ filters.height }}">
+                <input type="text" name="studbook" placeholder="Studbook" value="{{ filters.studbook }}">
+                <input type="text" name="ueln" placeholder="UELN" value="{{ filters.ueln }}">
+                <input type="text" name="fei_id" placeholder="FEI ID" value="{{ filters.fei_id }}">
+
+                <input type="text" name="microchip" placeholder="Microchip" value="{{ filters.microchip }}">
+                <input type="text" name="breeder" placeholder="Breeder" value="{{ filters.breeder }}">
+                <input type="text" name="owner" placeholder="Owner" value="{{ filters.owner }}">
+                <input type="text" name="sire" placeholder="Sire" value="{{ filters.sire }}">
+                
+                <input type="text" name="dam" placeholder="Dam" value="{{ filters.dam }}">
+                <input type="text" name="dam_sire" placeholder="Dam Sire" value="{{ filters.dam_sire }}">
+
+                <select name="approved">
+                    <option value="">Approved</option>
+                    <option value="yes" {% if filters.approved == "yes" %}selected{% endif %}>Yes</option>
+                    <option value="no" {% if filters.approved == "no" %}selected{% endif %}>No</option>
+                </select>
+
+                <input type="text" name="approved_for" placeholder="Approved For (Studbooks)" value="{{ filters.approved_for }}">
+
+            </div>
+
+            <div class="search-actions">
+                <a href="{% url 'ponies:pony_search' %}">Clear</a>
+                <button type="submit">Search</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- RESULTS COUNT -->
+    <p><strong>{{ page_obj.paginator.count }}</strong> result{{ page_obj.paginator.count|pluralize }}</p>
+
+    <!-- RESULTS TABLE -->
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Year</th>
+                <th>Height</th>
+                <th>Studbook</th>
+                <th>UELN</th>
+                <th>FEI ID</th>
+                <th>Sire</th>
+                <th>Dam</th>
+                <th>Dam Sire</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for pony in page_obj %}
+        <tr>
+            <td>
+                <a href="{% url 'ponies:pony_detail' pony.pk %}">
+                    {{ pony.name }}
+                </a>
+            </td>
+            <td>{{ pony.gender }}</td>
+            <td>{{ pony.year_of_birth|default:"-" }}</td>
+            <td>{{ pony.height_cm|default:"-" }}</td>
+            <td>{{ pony.studbook|default:"-" }}</td>
+            <td>{{ pony.ueln|default:"-" }}</td>
+            <td>{{ pony.fei_id|default:"-" }}</td>
+            <td>{% if pony.sire %}{{ pony.sire.name }}{% else %}-{% endif %}</td>
+            <td>{% if pony.dam %}{{ pony.dam.name }}{% else %}-{% endif %}</td>
+            <td>{% if pony.dam and pony.dam.sire %}{{ pony.dam.sire.name }}{% else %}-{% endif %}</td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="10" style="text-align:center; padding:30px;">
+                No ponies found.
+            </td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+
+        {% with request.GET.urlencode as query %}
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&{{ query|cut:'page=' }}{% endif %}">
+                    Previous
+                </a>
+            {% endif %}
+
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&{{ query|cut:'page=' }}{% endif %}">
+                    Next
+                </a>
+            {% endif %}
+
+        {% endwith %}
+
+    </div>
+
+</div>
+
+{% endblock %}
