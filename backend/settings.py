@@ -88,14 +88,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ponyindex_db',
-        'USER': 'ponyuser',
-        'PASSWORD': 'shayna2011',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'ponyINDEX',                        # your database name
+        'USER': 'super',                         # your Postgres superuser
+        'PASSWORD': 'shayna2011',  # the password you set
+        'HOST': 'ponyINDEX-5170.postgres.pythonanywhere-services.com',
+        'PORT': '15170',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
