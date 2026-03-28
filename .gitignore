@@ -10,9 +10,5 @@ db.sqlite3
 # Mac
 .DS_Store
 
-# Env
-
-.env
-
 # Postgres junk
 postgreSQL/
