@@ -27,7 +27,7 @@ import os
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = False
-ALLOWED_HOSTS = ["ponyindex.com", "www.ponyindex.com"]
+ALLOWED_HOSTS = ["ponyindex.com", "www.ponyindex.com","ponyINDEX.pythonanywhere.com"]
 
 
 
@@ -87,12 +87,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ponyINDEX',                        # your database name
-        'USER': 'super',                         # your Postgres superuser
-        'PASSWORD': 'shayna2011',  # the password you set
-        'HOST': 'ponyINDEX-5170.postgres.pythonanywhere-services.com',
-        'PORT': '15170',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ponyINDEX$default',
+        'USER': 'ponyINDEX',
+        'PASSWORD': 'shayna2011',
+        'HOST': 'ponyINDEX.mysql.pythonanywhere-services.com',
+        'PORT': '3306',
     }
 }
 
@@ -155,13 +155,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = [
-    'email*',
-    'password1*',
-    'password2*',
-    'first_name*',
-    'last_name*',
-]
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*', 'first_name*', 'last_name*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # Optional: make email required, unique, etc.
